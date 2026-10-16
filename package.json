@@ -1,0 +1,106 @@
+{
+  "name": "bisotun-flow-extractor",
+  "displayName": "Bisotun Flow Extractor",
+  "description": "Deep method execution flow and context extractor for LLMs",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:java",
+    "onLanguage:typescript",
+    "onLanguage:javascript",
+    "onLanguage:python"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "bisotun.copyDeepFlow",
+        "title": "Bisotun: Copy Deep Execution Flow",
+        "category": "Bisotun"
+      },
+      {
+        "command": "bisotun.copyShallowFlow",
+        "title": "Bisotun: Copy Shallow Flow (1 Level)",
+        "category": "Bisotun"
+      },
+      {
+        "command": "bisotun.copyCodeOnly",
+        "title": "Bisotun: Copy Code Only",
+        "category": "Bisotun"
+      },
+      {
+        "command": "bisotun.extractFlow",
+        "title": "Bisotun: Extract Flow",
+        "category": "Bisotun"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "bisotun.copyDeepFlow",
+          "when": "editorTextFocus",
+          "group": "bisotun@1"
+        },
+        {
+          "command": "bisotun.copyShallowFlow",
+          "when": "editorTextFocus",
+          "group": "bisotun@2"
+        },
+        {
+          "command": "bisotun.copyCodeOnly",
+          "when": "editorTextFocus",
+          "group": "bisotun@3"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "bisotun.copyDeepFlow",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "bisotun.copyShallowFlow",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "bisotun.copyCodeOnly",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "bisotun.extractFlow",
+          "when": "editorTextFocus"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.0.0",
+    "eslint": "^10.5.0",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^8.61.1"
+  },
+  "dependencies": {
+    "js-tiktoken": "^1.0.14"
+  },
+  "overrides": {
+    "diff": "^8.0.4",
+    "serialize-javascript": "^7.0.6"
+  }
+}
