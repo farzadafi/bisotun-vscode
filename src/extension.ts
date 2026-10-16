@@ -7,7 +7,6 @@ import { FlowCodeLensProvider } from './providers/flowCodeLensProvider';
 export function activate(context: vscode.ExtensionContext): void {
   console.log('[Bisotun] Extension activated.');
 
-  // رجیستر کردن CodeLens در صورت فعال بودن
   const config = vscode.workspace.getConfiguration('bisotun');
   if (config.get<boolean>('enableCodeLens', true)) {
     const selector: vscode.DocumentSelector = [
@@ -27,8 +26,6 @@ export function activate(context: vscode.ExtensionContext): void {
     customDepth?: number,
     rawOnly: boolean = false
   ) {
-    vscode.window.showInformationMessage('Bisotun: Command triggered...');
-
     const editor = vscode.window.activeTextEditor;
     const document = targetUri
       ? await vscode.workspace.openTextDocument(targetUri)
@@ -45,25 +42,24 @@ export function activate(context: vscode.ExtensionContext): void {
       const maxDepth = customDepth ?? config.get<number>('maxDepth', 4);
       const useFallback = config.get<boolean>('useFallback', true);
 
-      vscode.window.showInformationMessage(`Bisotun: Crawling line ${position.line + 1}...`);
+      const flowResult = await crawlFlow(document, position, { maxDepth, useFallback });
 
-      const nodes = await crawlFlow(document, position, { maxDepth, useFallback });
-
-      if (!nodes || nodes.length === 0) {
+      if (!flowResult.nodes || flowResult.nodes.length === 0) {
         vscode.window.showWarningMessage('Bisotun: No methods found at the cursor position.');
         return;
       }
 
-      const output = formatFlow(nodes, rawOnly ? 'raw' : 'markdown');
+      const output = formatFlow(flowResult, rawOnly ? 'raw' : 'markdown');
       await vscode.env.clipboard.writeText(output);
-      vscode.window.showInformationMessage(`Bisotun: Success! Extracted ${nodes.length} nodes to clipboard.`);
+      vscode.window.showInformationMessage(
+        `Bisotun: Extracted ${flowResult.nodes.length} methods & ${flowResult.models.length} models to clipboard!`
+      );
     } catch (err: any) {
       console.error('[Bisotun] Error:', err);
       vscode.window.showErrorMessage(`Bisotun Exception: ${err?.message || err}`);
     }
   }
 
-  // ثبت کامندها
   context.subscriptions.push(
     vscode.commands.registerCommand(COMMANDS.copyDeepFlow, (uri?: vscode.Uri, pos?: vscode.Position) =>
       handleExtraction(uri, pos, 4, false)

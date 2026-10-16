@@ -1,205 +1,179 @@
 import * as vscode from 'vscode';
-import { CycleDetector } from './cycleDetector';
-import { resolveImplementation, findEnclosingScope } from './lspResolver';
-import { findFallbackDefinition } from './fallbackResolver';
-import { isExternalUri } from '../utils/filter';
-import { ExtractedMethod } from '../constants';
+import {
+  findEnclosingScope,
+  extractTypeCandidates,
+  resolveModelDefinition,
+  resolveImplementationLocation,
+  isWorkspaceUri,
+  ExtractedModel,
+} from './lspResolver';
 
-export interface CrawlOptions {
-  maxDepth: number;
-  useFallback: boolean;
+export interface FlowNode {
+  className: string;
+  methodName: string;
+  filePath: string;
+  startLine: number;
+  endLine: number;
+  language: string;
+  code: string;
+  depth: number;
+  uri?: vscode.Uri;
+}
+
+export interface FlowResult {
+  nodes: FlowNode[];
+  models: ExtractedModel[];
 }
 
 export async function crawlFlow(
   document: vscode.TextDocument,
   position: vscode.Position,
-  options: CrawlOptions,
-): Promise<ExtractedMethod[]> {
-  const detector = new CycleDetector();
-  const result: ExtractedMethod[] = [];
+  options: { maxDepth: number; useFallback: boolean }
+): Promise<FlowResult> {
+  const nodes: FlowNode[] = [];
+  const visited = new Set<string>();
 
-  const enclosingScope = await findEnclosingScope(document, position);
-
-  if (!enclosingScope) {
-    return result;
+  const rootScope = await findEnclosingScope(document, position);
+  if (!rootScope) {
+    return { nodes: [], models: [] };
   }
 
-  const methodCode = document.getText(enclosingScope.range);
-  const languageId = getLanguageId(document.uri.fsPath);
+  const rootCode = document.getText(rootScope.range);
+  const rootKey = `${document.uri.toString()}#${rootScope.methodName}#${rootScope.range.start.line}`;
+  visited.add(rootKey);
 
-  const rootKey = `${document.uri.toString()}#${enclosingScope.className}#${enclosingScope.methodName}`;
-  detector.markVisited(rootKey);
-
-  result.push({
-    className: enclosingScope.className,
-    methodName: enclosingScope.methodName,
-    filePath: '',
-    startLine: enclosingScope.range.start.line,
-    endLine: enclosingScope.range.end.line,
-    language: languageId,
-    code: methodCode,
+  nodes.push({
+    className: rootScope.className,
+    methodName: rootScope.methodName,
+    filePath: vscode.workspace.asRelativePath(document.uri),
+    startLine: rootScope.range.start.line + 1,
+    endLine: rootScope.range.end.line + 1,
+    language: document.languageId,
+    code: rootCode.trim(),
+    depth: 0,
     uri: document.uri,
   });
 
-  if (options.maxDepth > 0) {
-    await crawlMethodBody(
-      document,
-      enclosingScope.range,
-      1,
-      options,
-      detector,
-      result,
+  const queue: Array<{ uri: vscode.Uri; range: vscode.Range; depth: number }> = [
+    { uri: document.uri, range: rootScope.range, depth: 0 },
+  ];
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    if (current.depth >= options.maxDepth) {
+      continue;
+    }
+
+    try {
+      const callItems = await vscode.commands.executeCommand<vscode.CallHierarchyItem[]>(
+        'vscode.prepareCallHierarchy',
+        current.uri,
+        current.range.start
+      );
+
+      if (callItems && callItems.length > 0) {
+        const outgoing = await vscode.commands.executeCommand<
+          vscode.CallHierarchyOutgoingCall[]
+        >('vscode.provideOutgoingCalls', callItems[0]);
+
+        if (outgoing) {
+          for (const call of outgoing) {
+            const target = call.to;
+
+            if (!isWorkspaceUri(target.uri)) {
+              continue;
+            }
+
+            const targetKey = `${target.uri.toString()}#${target.name}#${target.range.start.line}`;
+            let crawlTargetUri = target.uri;
+            let crawlTargetRange = target.range;
+
+            if (!visited.has(targetKey)) {
+              visited.add(targetKey);
+              const targetDoc = await vscode.workspace.openTextDocument(target.uri);
+              const methodCode = targetDoc.getText(target.range).trim();
+
+              nodes.push({
+                className: target.detail || '',
+                methodName: target.name,
+                filePath: vscode.workspace.asRelativePath(target.uri),
+                startLine: target.range.start.line + 1,
+                endLine: target.range.end.line + 1,
+                language: targetDoc.languageId,
+                code: methodCode,
+                depth: current.depth + 1,
+                uri: target.uri,
+              });
+            }
+
+            // بررسی پیاده‌سازی واقعی متد (Service -> ServiceImpl)
+            const impl = await resolveImplementationLocation(target.uri, target.selectionRange?.start ?? target.range.start);
+            if (impl && impl.uri.toString() !== target.uri.toString()) {
+              const implDoc = await vscode.workspace.openTextDocument(impl.uri);
+              const implScope = await findEnclosingScope(implDoc, impl.range.start);
+
+              const effectiveRange = implScope ? implScope.range : impl.range;
+              const effectiveClassName = implScope ? implScope.className : '';
+              const effectiveMethodName = implScope ? implScope.methodName : target.name;
+              const implKey = `${impl.uri.toString()}#${effectiveMethodName}#${effectiveRange.start.line}`;
+
+              if (!visited.has(implKey)) {
+                visited.add(implKey);
+                nodes.push({
+                  className: effectiveClassName,
+                  methodName: effectiveMethodName,
+                  filePath: vscode.workspace.asRelativePath(impl.uri),
+                  startLine: effectiveRange.start.line + 1,
+                  endLine: effectiveRange.end.line + 1,
+                  language: implDoc.languageId,
+                  code: implDoc.getText(effectiveRange).trim(),
+                  depth: current.depth + 1,
+                  uri: impl.uri,
+                });
+              }
+
+              // ادامه کراول به داخل کد پیاده‌سازی
+              crawlTargetUri = impl.uri;
+              crawlTargetRange = effectiveRange;
+            }
+
+            queue.push({
+              uri: crawlTargetUri,
+              range: crawlTargetRange,
+              depth: current.depth + 1,
+            });
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[Bisotun] Call hierarchy error:', e);
+    }
+  }
+
+  // استخراج DTOها، Recordها و Projections منحصر به ورک‌اسپیس
+  const models: ExtractedModel[] = [];
+  const processedModels = new Set<string>();
+
+  for (const node of nodes) {
+    if (!node.uri) continue;
+    const doc = await vscode.workspace.openTextDocument(node.uri);
+    const candidateTypes = extractTypeCandidates(node.code);
+
+    const range = new vscode.Range(
+      new vscode.Position(node.startLine - 1, 0),
+      new vscode.Position(node.endLine - 1, 0)
     );
-  }
 
-  return result;
-}
-
-async function crawlMethodBody(
-  document: vscode.TextDocument,
-  methodRange: vscode.Range,
-  depth: number,
-  options: CrawlOptions,
-  detector: CycleDetector,
-  result: ExtractedMethod[],
-): Promise<void> {
-  if (depth > options.maxDepth) {
-    return;
-  }
-
-  const calls = extractCallPositions(document, methodRange);
-
-  for (const call of calls) {
-    let definition = await resolveImplementation(document, call.position);
-
-    if (!definition && options.useFallback) {
-      const line = document.lineAt(call.position.line).text;
-      const symbolName = extractSymbolAtPosition(line, call.position.character);
-      if (symbolName) {
-        definition = await findFallbackDefinition(symbolName);
+    for (const typeName of candidateTypes) {
+      if (!processedModels.has(typeName) && typeName !== node.className) {
+        processedModels.add(typeName);
+        const resolved = await resolveModelDefinition(doc, typeName, range);
+        if (resolved) {
+          models.push(resolved);
+        }
       }
     }
-
-    if (!definition || isExternalUri(definition.uri)) {
-      continue;
-    }
-
-    const targetDocument = await vscode.workspace.openTextDocument(definition.uri);
-    const scope = await findEnclosingScope(targetDocument, definition.range.start);
-
-    if (!scope) {
-      continue;
-    }
-
-    const key = `${targetDocument.uri.toString()}#${scope.className}#${scope.methodName}`;
-    if (detector.hasVisited(key)) {
-      continue;
-    }
-    detector.markVisited(key);
-
-    const methodCode = targetDocument.getText(scope.range);
-    const languageId = getLanguageId(targetDocument.uri.fsPath);
-
-    result.push({
-      className: scope.className,
-      methodName: scope.methodName,
-      filePath: '',
-      startLine: scope.range.start.line,
-      endLine: scope.range.end.line,
-      language: languageId,
-      code: methodCode,
-      uri: targetDocument.uri,
-    });
-
-    if (depth < options.maxDepth) {
-      await crawlMethodBody(
-        targetDocument,
-        scope.range,
-        depth + 1,
-        options,
-        detector,
-        result,
-      );
-    }
-  }
-}
-
-function extractCallPositions(
-  document: vscode.TextDocument,
-  range: vscode.Range,
-): { position: vscode.Position }[] {
-  const calls: { position: vscode.Position }[] = [];
-  const text = document.getText(range);
-  const startOffset = document.offsetAt(range.start);
-
-  const regex = /\b([A-Za-z_$][\w$]*)\s*\(/g;
-  let match: RegExpExecArray | null;
-
-  while ((match = regex.exec(text)) !== null) {
-    const symbol = match[1];
-    const matchIndex = match.index;
-
-    if (!isLikelyMethodCall(text, matchIndex, symbol)) {
-      continue;
-    }
-
-    const matchOffset = startOffset + matchIndex;
-    const position = document.positionAt(matchOffset);
-    calls.push({ position });
   }
 
-  return calls;
-}
-
-function isLikelyMethodCall(text: string, index: number, symbol: string): boolean {
-  const keywords = new Set([
-    'if', 'while', 'for', 'switch', 'catch', 'synchronized',
-    'new', 'return', 'throw', 'instanceof', 'typeof',
-    'super', 'this', 'class', 'interface', 'enum',
-  ]);
-
-  if (keywords.has(symbol)) {
-    return false;
-  }
-
-  let lookback = index - 1;
-  while (lookback >= 0 && /\s/.test(text[lookback])) {
-    lookback--;
-  }
-  if (lookback >= 0 && text[lookback] === '@') {
-    return false;
-  }
-
-  return true;
-}
-
-function extractSymbolAtPosition(
-  line: string,
-  character: number,
-): string | undefined {
-  const left = line.slice(0, character);
-  const right = line.slice(character);
-
-  const leftMatch = left.match(/[A-Za-z_$][\w$]*$/);
-  const rightMatch = right.match(/^[A-Za-z_$][\w$]*/);
-
-  const symbol = `${leftMatch?.[0] ?? ''}${rightMatch?.[0] ?? ''}`;
-  return symbol || undefined;
-}
-
-function getLanguageId(filePath: string): string {
-  const ext = filePath.split('.').pop()?.toLowerCase();
-  const languageMap: Record<string, string> = {
-    java: 'java',
-    py: 'python',
-    js: 'javascript',
-    ts: 'typescript',
-    tsx: 'typescript',
-    jsx: 'javascript',
-    kt: 'kotlin',
-    cs: 'csharp',
-    go: 'go',
-    rs: 'rust',
-  };
-  return languageMap[ext ?? ''] || 'text';
+  return { nodes, models };
 }

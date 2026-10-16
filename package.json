@@ -3,6 +3,7 @@
   "displayName": "Bisotun Flow Extractor",
   "description": "Deep method execution flow and context extractor for LLMs",
   "version": "0.0.1",
+  "publisher": "farzadafi",
   "engines": {
     "vscode": "^1.85.0"
   },
