@@ -41,22 +41,30 @@
         "category": "Bisotun"
       }
     ],
+    "submenus": [
+      {
+        "id": "bisotun.submenu",
+        "label": "Bisotun"
+      }
+    ],
     "menus": {
       "editor/context": [
         {
-          "command": "bisotun.copyDeepFlow",
+          "submenu": "bisotun.submenu",
           "when": "editorTextFocus",
-          "group": "bisotun@1"
+          "group": "navigation@1"
+        },
+        {
+          "command": "bisotun.copyDeepFlow",
+          "parent": "bisotun.submenu"
         },
         {
           "command": "bisotun.copyShallowFlow",
-          "when": "editorTextFocus",
-          "group": "bisotun@2"
+          "parent": "bisotun.submenu"
         },
         {
           "command": "bisotun.copyCodeOnly",
-          "when": "editorTextFocus",
-          "group": "bisotun@3"
+          "parent": "bisotun.submenu"
         }
       ],
       "commandPalette": [
