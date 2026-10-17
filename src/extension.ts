@@ -2,23 +2,11 @@ import * as vscode from 'vscode';
 import { COMMANDS } from './constants';
 import { crawlFlow } from './core/flowCrawler';
 import { formatFlow } from './utils/formatter';
-import { FlowCodeLensProvider } from './providers/flowCodeLensProvider';
 
 export function activate(context: vscode.ExtensionContext): void {
   console.log('[Bisotun] Extension activated.');
 
   const config = vscode.workspace.getConfiguration('bisotun');
-  if (config.get<boolean>('enableCodeLens', true)) {
-    const selector: vscode.DocumentSelector = [
-      { scheme: 'file', language: 'java' },
-      { scheme: 'file', language: 'typescript' },
-      { scheme: 'file', language: 'javascript' },
-      { scheme: 'file', language: 'python' },
-    ];
-    context.subscriptions.push(
-      vscode.languages.registerCodeLensProvider(selector, new FlowCodeLensProvider())
-    );
-  }
 
   async function handleExtraction(
     targetUri?: vscode.Uri,
