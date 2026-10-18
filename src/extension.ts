@@ -8,13 +8,41 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const config = vscode.workspace.getConfiguration('bisotun');
 
+  async function validateEnvironment(document: vscode.TextDocument): Promise<boolean> {
+    if (document.languageId === 'java') {
+      const redhatExt = vscode.extensions.getExtension('redhat.java');
+      if (!redhatExt) {
+        const choice = await vscode.window.showErrorMessage(
+          'Bisotun requires "Language Support for Java by Red Hat" extension to analyze Java projects.',
+          'Install Extension'
+        );
+        if (choice === 'Install Extension') {
+          vscode.commands.executeCommand('workbench.extensions.installExtension', 'redhat.java');
+        }
+        return false;
+      }
+
+      if (!redhatExt.isActive) {
+        const choice = await vscode.window.showWarningMessage(
+          'Java Language Support is currently initializing or disabled.',
+          'Activate Now'
+        );
+        if (choice === 'Activate Now') {
+          await redhatExt.activate();
+          return true;
+        }
+        return false;
+      }
+    }
+    return true;
+  }
+
   async function handleExtraction(
     targetUri?: vscode.Uri,
     targetPosition?: vscode.Position,
     customDepth?: number,
     rawOnly: boolean = false
-  ) {
-    const editor = vscode.window.activeTextEditor;
+  ) {    const editor = vscode.window.activeTextEditor;
     const document = targetUri
       ? await vscode.workspace.openTextDocument(targetUri)
       : editor?.document;
@@ -23,6 +51,11 @@ export function activate(context: vscode.ExtensionContext): void {
 
     if (!document || !position) {
       vscode.window.showErrorMessage('Bisotun: No active document or cursor position found.');
+      return;
+    }
+
+    const isValid = await validateEnvironment(document);
+    if (!isValid) {
       return;
     }
 
