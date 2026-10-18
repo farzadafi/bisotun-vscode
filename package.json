@@ -22,22 +22,22 @@
     "commands": [
       {
         "command": "bisotun.copyDeepFlow",
-        "title": "Bisotun: Copy Deep Execution Flow",
+        "title": "Copy Deep Execution Flow",
         "category": "Bisotun"
       },
       {
         "command": "bisotun.copyShallowFlow",
-        "title": "Bisotun: Copy Shallow Flow (1 Level)",
+        "title": "Copy Shallow Flow (1 Level)",
         "category": "Bisotun"
       },
       {
         "command": "bisotun.copyCodeOnly",
-        "title": "Bisotun: Copy Code Only",
+        "title": "Copy Code Only",
         "category": "Bisotun"
       },
       {
         "command": "bisotun.extractFlow",
-        "title": "Bisotun: Extract Flow",
+        "title": "Extract Flow",
         "category": "Bisotun"
       }
     ],
@@ -53,18 +53,20 @@
           "submenu": "bisotun.submenu",
           "when": "editorTextFocus",
           "group": "navigation@1"
-        },
+        }
+      ],
+      "bisotun.submenu": [
         {
           "command": "bisotun.copyDeepFlow",
-          "parent": "bisotun.submenu"
+          "group": "1_actions@1"
         },
         {
           "command": "bisotun.copyShallowFlow",
-          "parent": "bisotun.submenu"
+          "group": "1_actions@2"
         },
         {
           "command": "bisotun.copyCodeOnly",
-          "parent": "bisotun.submenu"
+          "group": "1_actions@3"
         }
       ],
       "commandPalette": [
