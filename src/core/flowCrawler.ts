@@ -1,12 +1,6 @@
 import * as vscode from 'vscode';
-import {
-  findEnclosingScope,
-  extractTypeCandidates,
-  resolveModelDefinition,
-  resolveImplementationLocation,
-  isWorkspaceUri,
-  ExtractedModel,
-} from './lspResolver';
+import { strategyRegistry } from '../strategies/strategyRegistry';
+import { isWorkspaceUri } from '../strategies/javaStrategy';
 
 export interface FlowNode {
   className: string;
@@ -20,6 +14,12 @@ export interface FlowNode {
   uri?: vscode.Uri;
 }
 
+export interface ExtractedModel {
+  name: string;
+  filePath: string;
+  code: string;
+}
+
 export interface FlowResult {
   nodes: FlowNode[];
   models: ExtractedModel[];
@@ -30,10 +30,16 @@ export async function crawlFlow(
   position: vscode.Position,
   options: { maxDepth: number; useFallback: boolean }
 ): Promise<FlowResult> {
+  const strategy = strategyRegistry.getStrategy(document.languageId);
+  if (!strategy) {
+    console.warn(`[Bisotun] No strategy registered for language: ${document.languageId}`);
+    return { nodes: [], models: [] };
+  }
+
   const nodes: FlowNode[] = [];
   const visited = new Set<string>();
 
-  const rootScope = await findEnclosingScope(document, position);
+  const rootScope = await strategy.findEnclosingScope(document, position);
   if (!rootScope) {
     return { nodes: [], models: [] };
   }
@@ -106,11 +112,15 @@ export async function crawlFlow(
               });
             }
 
-            // بررسی پیاده‌سازی واقعی متد (Service -> ServiceImpl)
-            const impl = await resolveImplementationLocation(target.uri, target.selectionRange?.start ?? target.range.start);
+            // بررسی پیاده‌سازی متد اینترفیس
+            const impl = await strategy.resolveImplementationLocation(
+              target.uri,
+              target.selectionRange?.start ?? target.range.start
+            );
+
             if (impl && impl.uri.toString() !== target.uri.toString()) {
               const implDoc = await vscode.workspace.openTextDocument(impl.uri);
-              const implScope = await findEnclosingScope(implDoc, impl.range.start);
+              const implScope = await strategy.findEnclosingScope(implDoc, impl.range.start);
 
               const effectiveRange = implScope ? implScope.range : impl.range;
               const effectiveClassName = implScope ? implScope.className : '';
@@ -132,7 +142,6 @@ export async function crawlFlow(
                 });
               }
 
-              // ادامه کراول به داخل کد پیاده‌سازی
               crawlTargetUri = impl.uri;
               crawlTargetRange = effectiveRange;
             }
@@ -150,14 +159,14 @@ export async function crawlFlow(
     }
   }
 
-  // استخراج DTOها، Recordها و Projections منحصر به ورک‌اسپیس
+  // استخراج DTOها / مدل‌ها
   const models: ExtractedModel[] = [];
   const processedModels = new Set<string>();
 
   for (const node of nodes) {
     if (!node.uri) continue;
     const doc = await vscode.workspace.openTextDocument(node.uri);
-    const candidateTypes = extractTypeCandidates(node.code);
+    const candidateTypes = strategy.extractTypeCandidates(node.code);
 
     const range = new vscode.Range(
       new vscode.Position(node.startLine - 1, 0),
@@ -167,7 +176,7 @@ export async function crawlFlow(
     for (const typeName of candidateTypes) {
       if (!processedModels.has(typeName) && typeName !== node.className) {
         processedModels.add(typeName);
-        const resolved = await resolveModelDefinition(doc, typeName, range);
+        const resolved = await strategy.resolveModelDefinition(doc, typeName, range);
         if (resolved) {
           models.push(resolved);
         }
