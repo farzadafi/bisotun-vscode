@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { LanguageStrategy } from './languageStrategy';
-import { isExternalUri } from '../utils/filter';
+import { isExternalUri, isWorkspaceUri } from '../utils/filter';
 
 const JAVA_PRIMITIVE_TYPES = new Set([
   'void', 'boolean', 'byte', 'char', 'short', 'int', 'long', 'float', 'double',
@@ -12,17 +12,6 @@ const JAVA_PRIMITIVE_TYPES = new Set([
   'Override', 'Transactional', 'Autowired', 'Component', 'Service', 'Repository',
   'Controller', 'RestController', 'Bean', 'Configuration'
 ]);
-
-export function isWorkspaceUri(uri: vscode.Uri): boolean {
-  if (isExternalUri(uri)) {
-    return false;
-  }
-  const fsPath = uri.fsPath || uri.path;
-  if (fsPath.includes('.jar!') || fsPath.includes('.jar/') || fsPath.endsWith('.jar')) {
-    return false;
-  }
-  return vscode.workspace.getWorkspaceFolder(uri) !== undefined;
-}
 
 export class JavaStrategy implements LanguageStrategy {
   readonly languageId = 'java';
