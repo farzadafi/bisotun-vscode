@@ -1,11 +1,13 @@
 import { LanguageStrategy } from './languageStrategy';
+import { JavaScriptStrategy } from './javascriptStrategy';
 import { JavaStrategy } from './javaStrategy';
 
 class StrategyRegistry {
-  private strategies: Map<string, LanguageStrategy> = new Map();
+  private readonly strategies = new Map<string, LanguageStrategy>();
 
   constructor() {
     this.register(new JavaStrategy());
+    this.register(new JavaScriptStrategy());
   }
 
   register(strategy: LanguageStrategy): void {
@@ -13,7 +15,19 @@ class StrategyRegistry {
   }
 
   getStrategy(languageId: string): LanguageStrategy | undefined {
-    return this.strategies.get(languageId);
+    const exactStrategy = this.strategies.get(languageId);
+
+    if (exactStrategy) {
+      return exactStrategy;
+    }
+
+    for (const strategy of this.strategies.values()) {
+      if (strategy.supports(languageId)) {
+        return strategy;
+      }
+    }
+
+    return undefined;
   }
 }
 
