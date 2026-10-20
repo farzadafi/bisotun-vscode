@@ -15,8 +15,33 @@ export function isExternalUri(uri: vscode.Uri): boolean {
   );
 }
 
-export function isSupportedDocument(document: vscode.TextDocument): boolean {
-  return ['java', 'python', 'javascript', 'typescript'].includes(
-    document.languageId,
-  );
+export function isWorkspaceUri(uri: vscode.Uri): boolean {
+  if (isExternalUri(uri)) {
+    return false;
+  }
+
+  const fsPath = uri.fsPath || uri.path;
+
+  if (
+    fsPath.includes('.jar!') ||
+    fsPath.includes('.jar/') ||
+    fsPath.endsWith('.jar')
+  ) {
+    return false;
+  }
+
+  return vscode.workspace.getWorkspaceFolder(uri) !== undefined;
+}
+
+export function isSupportedDocument(
+  document: vscode.TextDocument,
+): boolean {
+  return [
+    'java',
+    'python',
+    'javascript',
+    'typescript',
+    'javascriptreact',
+    'typescriptreact',
+  ].includes(document.languageId);
 }
