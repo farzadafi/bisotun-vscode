@@ -136,5 +136,20 @@
   "overrides": {
     "diff": "^8.0.4",
     "serialize-javascript": "^7.0.6"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/farzadafi/bisotun-vscode.git"
+  },
+  "license": "MIT",
+  "keywords": [
+    "java",
+    "code-extraction",
+    "bisotun"
+  ],
+  "bugs": {
+    "url": "https://github.com/farzadafi/bisotun-vscode.git"
+  },
+  "homepage": "https://github.com/farzadafi/bisotun-vscode.git",
+  "icon": "pluginIcon.png"
 }
