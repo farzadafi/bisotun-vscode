@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { COMMANDS } from './constants';
-import { crawlFlow } from './core/flowCrawler';
+import { allNodes } from './core/types';
+import { flowExtractionDispatcher, kindOf } from './language/languageDispatcher';
 import { formatFlow } from './utils/formatter';
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -42,7 +43,8 @@ export function activate(context: vscode.ExtensionContext): void {
     targetPosition?: vscode.Position,
     customDepth?: number,
     rawOnly: boolean = false
-  ) {    const editor = vscode.window.activeTextEditor;
+  ) {
+    const editor = vscode.window.activeTextEditor;
     const document = targetUri
       ? await vscode.workspace.openTextDocument(targetUri)
       : editor?.document;
@@ -61,19 +63,35 @@ export function activate(context: vscode.ExtensionContext): void {
 
     try {
       const maxDepth = customDepth ?? config.get<number>('maxDepth', 4);
-      const useFallback = config.get<boolean>('useFallback', true);
+      const includeModels = config.get<boolean>('includeModels', true);
 
-      const flowResult = await crawlFlow(document, position, { maxDepth, useFallback });
+      const result = await flowExtractionDispatcher.extractFlow({
+        document,
+        position,
+        maxDepth,
+        includeModels,
+      });
 
-      if (!flowResult.nodes || flowResult.nodes.length === 0) {
-        vscode.window.showWarningMessage('Bisotun: No methods found at the cursor position.');
+      if (!result) {
+        const kind = kindOf(document);
+        if (kind === 'PYTHON' || kind === 'KOTLIN') {
+          vscode.window.showWarningMessage(
+            `Bisotun: ${kind === 'PYTHON' ? 'Python' : 'Kotlin'} flow extraction is not yet supported.`
+          );
+        } else if (kind === 'UNKNOWN') {
+          vscode.window.showWarningMessage(
+            'Bisotun: This file type is not supported by Bisotun.'
+          );
+        } else {
+          vscode.window.showWarningMessage('Bisotun: No methods found at the cursor position.');
+        }
         return;
       }
 
-      const output = formatFlow(flowResult, rawOnly ? 'raw' : 'markdown');
+      const output = formatFlow(result, rawOnly ? 'raw' : 'markdown');
       await vscode.env.clipboard.writeText(output);
       vscode.window.showInformationMessage(
-        `Bisotun: Extracted ${flowResult.nodes.length} methods & ${flowResult.models.length} models to clipboard!`
+        `Bisotun: Extracted ${allNodes(result).length} methods & ${result.models.length} models to clipboard!`
       );
     } catch (err: any) {
       console.error('[Bisotun] Error:', err);
@@ -98,3 +116,4 @@ export function activate(context: vscode.ExtensionContext): void {
 }
 
 export function deactivate(): void {}
+
