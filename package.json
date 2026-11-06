@@ -21,6 +21,27 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "Bisotun Flow Extractor",
+      "properties": {
+        "bisotun.maxDepth": {
+          "type": "number",
+          "default": 4,
+          "minimum": 0,
+          "description": "Maximum depth of the call flow graph extracted from the caret method. 0 = root method only, 1 = direct callees, etc."
+        },
+        "bisotun.includeModels": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include related data models (DTOs / projections / records) in the extracted flow."
+        },
+        "bisotun.useFallback": {
+          "type": "boolean",
+          "default": true,
+          "description": "Allow the legacy line-based fallback crawler when symbol-based extraction cannot resolve a call."
+        }
+      }
+    },
     "commands": [
       {
         "command": "bisotun.copyDeepFlow",
