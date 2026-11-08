@@ -74,9 +74,9 @@ export function activate(context: vscode.ExtensionContext): void {
 
       if (!result) {
         const kind = kindOf(document);
-        if (kind === 'PYTHON' || kind === 'KOTLIN') {
+        if (kind === 'KOTLIN') {
           vscode.window.showWarningMessage(
-            `Bisotun: ${kind === 'PYTHON' ? 'Python' : 'Kotlin'} flow extraction is not yet supported.`
+            'Bisotun: Kotlin flow extraction is not yet supported.'
           );
         } else if (kind === 'UNKNOWN') {
           vscode.window.showWarningMessage(
