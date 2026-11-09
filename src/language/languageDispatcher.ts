@@ -9,6 +9,7 @@ import {
 import { LanguageFlowExtractor } from './languageFlowExtractor';
 import { JavaFlowExtractor } from './javaFlowExtractor';
 import { JsTsFlowExtractor } from './jsTsFlowExtractor';
+import { PythonFlowExtractor } from './pythonFlowExtractor';
 
 /**
  * Singleton registry that resolves the right `LanguageFlowExtractor` for a
@@ -21,7 +22,7 @@ class LanguageExtractionDispatcher {
   private readonly extractors: LanguageFlowExtractor[];
 
   constructor() {
-    this.extractors = [new JavaFlowExtractor(), new JsTsFlowExtractor()];
+    this.extractors = [new JavaFlowExtractor(), new JsTsFlowExtractor(), new PythonFlowExtractor()];
   }
 
   /**
