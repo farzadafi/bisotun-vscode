@@ -2,7 +2,7 @@
 
 Instantly Extract Execution Call Flows & Data Models in VS Code.
 
-Bisotun Flow Extractor automates code navigation by tracing and extracting nested execution call hierarchies and related data models directly to your clipboard in clean Markdown format—ideal for context injection into LLMs (ChatGPT, Claude, Ollama) or team documentation.
+Bisotun Flow Extractor automates code navigation by tracing and extracting nested execution call hierarchies and related data models directly to your clipboard in clean Markdown format—ideal for context injection into LLMs (ChatGPT, Claude, Ollama, DeepSeek) or team documentation.
 
 ---
 
@@ -16,10 +16,22 @@ Just as Mount Bisotun is structured in magnificent, enduring geological layers, 
 
 ## Key Features
 
-- **Deep Flow Extraction:** Recursively crawls method execution call chains up to configurable depths.
-- **Model Crawler:** Automatically extracts referenced DTOs, Entities, and Interfaces.
-- **Java Support (v1.0.0):** Robust parsing and traversal for Java codebases.
-- **LLM-Optimized Markdown:** Generates structured markdown trees ready to be pasted into AI prompts.
+- **Deep Flow Extraction:** Recursively crawls method execution call chains up to configurable depths across workspace files.
+- **Model Crawler:** Automatically extracts referenced DTOs, Entities, Classes, and Interfaces.
+- **Multi-Language Support:**
+  - **Java:** Robust parsing and traversal for Java codebases.
+  - **Python:** Full AST traversal, inter-file method resolution, and noise filtering for built-ins.
+- **LLM-Optimized Markdown:** Generates structured markdown trees ready to be pasted directly into AI prompts with token estimates.
+
+---
+
+## Supported Languages
+
+| Language | Status | Features |
+| :--- | :--- | :--- |
+| **Java** | Supported (v1.0.0+) | Deep & shallow call flow, records, DTOs, interfaces |
+| **Python** | Supported (v1.1.0+) | Deep & shallow call flow, classes, modules, built-in filtering |
+| **TypeScript / JS** | In Roadmap | Coming soon |
 
 ---
 
@@ -36,4 +48,4 @@ Just as Mount Bisotun is structured in magnificent, enduring geological layers, 
 
 ## Requirements
 
-- Visual Studio Code version `1.80.0` or higher.
+- Visual Studio Code version `1.85.0` or higher.
