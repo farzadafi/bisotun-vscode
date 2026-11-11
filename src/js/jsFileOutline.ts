@@ -325,7 +325,9 @@ export class JsFileOutlineBuilder {
     const bodyClose = this.brackets[bodyOpen];
     if (bodyClose === -1) return index + 1;
     if (name !== undefined) {
-      this.types.push({ name, startOffset: this.tokens[nameIndex].startOffset, endOffset: this.tokens[bodyClose].endOffset });
+      // The type span starts at the `class` keyword so model snippets read `class UserRequest { ... }`,
+      // mirroring the Python `class`-keyword start (Python `isModelType` and model `code` rely on it).
+      this.types.push({ name, startOffset: this.tokens[index].startOffset, endOffset: this.tokens[bodyClose].endOffset });
       this.collectMethods(name, bodyOpen, bodyClose);
     }
     return bodyClose + 1;
@@ -849,6 +851,8 @@ export class JsFileOutlineImpl implements JsFileOutline {
       const token = this.tokens[i];
       if (
         token.type !== 'IDENTIFIER' ||
+        // `new X(...)` is a constructor call = a type reference, not an execution dependency.
+        this.tokens[i - 1]?.text === 'new' ||
         nested.some((fn) => token.startOffset >= fn.startOffset && token.startOffset <= fn.endOffset)
       ) {
         i++;
@@ -918,4 +922,9 @@ export class JsFileOutlineImpl implements JsFileOutline {
   private isNameToken(token: JsToken): boolean {
     return token.type === 'IDENTIFIER' || token.type === 'KEYWORD';
   }
+}
+
+/** Parses `text` into a `JsFileOutline`, mirroring the Kotlin `JsFileOutline.parse`. */
+export function parseJsOutline(text: string): JsFileOutline {
+  return new JsFileOutlineBuilder(text).build();
 }
