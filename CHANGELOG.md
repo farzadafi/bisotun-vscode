@@ -4,6 +4,18 @@ All notable changes to the "Bisotun Flow Extractor" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.2.0] - 2026-11-10
+
+### Added
+- **High-Performance JavaScript & TypeScript Support:** Integrated the dedicated tokenizer-tier extractor (`JsTsFlowExtractor`, `JsTokenizer`, and `JsFileOutline`) ported from the JetBrains plugin engine.
+- Precise relative-import call resolution across modules, services, controllers, and repositories without relying on heavy external Language Servers.
+- Automatic extraction of data models, DTOs, interfaces, and types (e.g., `CreateUserDto`, `User`).
+
+### Fixed & Improved
+- **Noise Elimination:** Built-in JS/TS prototype methods (`toLowerCase`, `trim`, `substring`, `toString`, `find`, `set`, `map`, etc.) and host globals are now strictly filtered out from execution dependencies.
+- **Markdown Formatting:** Fixed a bug causing duplicate `## Related Data Models` headers; data models now render under a single deduplicated section.
+- Fixed root target boundary resolution when extracting methods starting from the `class` keyword.
+
 ## [1.1.0] - 2026-11-10
 
 ### Added
