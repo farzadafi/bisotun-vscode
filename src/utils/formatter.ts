@@ -52,8 +52,10 @@ export function formatFlow(result: FlowResult, mode: 'markdown' | 'raw' = 'markd
   }
 
   // Related Models / DTOs
-  for (const model of models) {
+  if (models.length > 0) {
     output += `## Related Data Models (DTOs / Projections / Records)\n`;
+  }
+  for (const model of models) {
     output += `### Model: \`${model.displayName}\`\n`;
     output += `- File: \`${model.filePath}\`\n\n`;
     output += `\`\`\`${codeFence(model)}\n${model.code}\n\`\`\`\n\n`;
