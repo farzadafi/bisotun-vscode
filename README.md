@@ -1,51 +1,62 @@
-# Bisotun Flow Extractor
+# Bisotun Flow Extractor for Visual Studio Code
 
-Instantly Extract Execution Call Flows & Data Models in VS Code.
+Deep method execution flow and context extractor optimized for LLMs (Claude, ChatGPT, DeepSeek, Local LLMs).
 
-Bisotun Flow Extractor automates code navigation by tracing and extracting nested execution call hierarchies and related data models directly to your clipboard in clean Markdown format—ideal for context injection into LLMs (ChatGPT, Claude, Ollama, DeepSeek) or team documentation.
-
----
-
-## Why "Bisotun"? The Philosophy Beneath the Name
-
-The extension is named after **Mount Bisotun**, a majestic peak located near Kermanshah, Iran, famous for holding the world's largest limestone cliff and the historic Bisotun Inscription—carved in three ancient cuneiform languages by command of Darius the Great.
-
-Just as Mount Bisotun is structured in magnificent, enduring geological layers, complex software code is also built layer upon layer. Bisotun Flow Extractor dives deep through these architectural layers to unearth, decode, and document your call flows and data models with historical precision.
+Extract complete execution graphs, inter-module dependencies, and related data models directly to your clipboard in structured, token-efficient Markdown.
 
 ---
 
-## Key Features
+## 🚀 Supported Languages
 
-- **Deep Flow Extraction:** Recursively crawls method execution call chains up to configurable depths across workspace files.
-- **Model Crawler:** Automatically extracts referenced DTOs, Entities, Classes, and Interfaces.
-- **Multi-Language Support:**
-  - **Java:** Robust parsing and traversal for Java codebases.
-  - **Python:** Full AST traversal, inter-file method resolution, and noise filtering for built-ins.
-- **LLM-Optimized Markdown:** Generates structured markdown trees ready to be pasted directly into AI prompts with token estimates.
+- **Java** (Spring Boot, Records, Interfaces, Entities, DTOs)
+- **Python** (FastAPI, Flask, Django, Standalone functions & Models)
+- **TypeScript & TSX** (Classes, Methods, Interfaces, DTOs, Type aliases)
+- **JavaScript & JSX** (ES modules, Classes, Prototypes, Utilities)
 
 ---
 
-## Supported Languages
+## ⚡ Key Features
 
-| Language | Status | Features |
+- **Token-Efficient Context:** Only extracts real business logic and calls, eliminating runtime built-ins, framework plumbing, and prototype noise.
+- **Deep Inter-File Traversal:** Traces method executions across controllers, services, repositories, and helper utilities.
+- **Automated Data Model Detection:** Automatically collects referenced DTOs, schemas, entities, and type definitions at the bottom of the flow.
+- **Context-Menu Driven:** Right-click inside any function or method and extract immediately.
+
+---
+
+## 🛠️ Usage
+
+1. Open any Java, Python, TypeScript, or JavaScript file.
+2. Place your cursor inside the method/function you want to trace.
+3. **Right-click** and open the **Bisotun** submenu:
+   - **Copy Deep Execution Flow:** Traverses the full call tree up to `bisotun.maxDepth`.
+   - **Copy Shallow Flow (1 Level):** Direct callees only.
+   - **Copy Code Only:** Extracts the current method without dependencies.
+4. Paste directly into your LLM chat.
+
+---
+
+## ⚙️ Extension Settings
+
+| Setting | Default | Description |
 | :--- | :--- | :--- |
-| **Java** | Supported (v1.0.0+) | Deep & shallow call flow, records, DTOs, interfaces |
-| **Python** | Supported (v1.1.0+) | Deep & shallow call flow, classes, modules, built-in filtering |
-| **TypeScript / JS** | In Roadmap | Coming soon |
+| `bisotun.maxDepth` | `4` | Maximum depth of call hierarchy traversal (0 = target method only). |
+| `bisotun.includeModels` | `true` | Automatically append referenced data models (DTOs, records, interfaces). |
+| `bisotun.useFallback` | `true` | Enable heuristic/tokenizer fallback resolution when LSP definitions are missing. |
 
 ---
 
-## Keyboard Shortcuts
+## 📄 Output Format Example
+```markdown
+# Context Flow Extracted by Bisotun
+- Root Target: `UserController#createUser`
+- Extracted Nodes: 5
+- Extracted Models: 2
+- Estimated Tokens: ~256
 
-| Action | Windows / Linux | macOS |
-| :--- | :--- | :--- |
-| **Copy Deep Flow** (Calls + Models) | `Ctrl + Alt + Shift + D` | `Cmd + Option + Shift + D` |
-| **Copy Shallow Flow** (Calls + Models) | `Ctrl + Alt + Shift + S` | `Cmd + Option + Shift + S` |
-| **Copy Shallow Flow** (No Models) | `Ctrl + Alt + Shift + M` | `Cmd + Option + Shift + M` |
-| **Copy Method Only** | `Ctrl + Alt + Shift + C` | `Cmd + Option + Shift + C` |
+## Root Method
+### `UserController#createUser`
+- File: `ts/userController.ts`
+- Lines: 13-15
 
----
-
-## Requirements
-
-- Visual Studio Code version `1.85.0` or higher.
+...
