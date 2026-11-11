@@ -1,8 +1,8 @@
 {
   "name": "bisotun-flow-extractor",
   "displayName": "Bisotun Flow Extractor",
-  "description": "Deep method execution flow and context extractor for LLMs (Java & Python)",
-  "version": "1.1.0",
+  "description": "Deep method execution flow and context extractor for LLMs (Java, Python, TypeScript & JavaScript)",
+  "version": "1.2.0",
   "publisher": "farzadafi",
   "engines": {
     "vscode": "^1.85.0"
@@ -145,6 +145,8 @@
   "keywords": [
     "java",
     "python",
+    "typescript",
+    "javascript",
     "code-extraction",
     "call-graph",
     "llm-context",
