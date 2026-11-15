@@ -4,6 +4,25 @@ All notable changes to the "Bisotun Flow Extractor" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.3.0] - 2026-11-14
+
+### Added
+- **C++ Language Support:** Tokenizer-tier extractor (`CppFlowExtractor`, `CppTokenizer`,
+  `CppFileOutline`, `CppCallResolver`) for `.cpp`, `.cc`, `.cxx`, `.c++`, `.h`, `.hpp`, `.hh`,
+  `.hxx`, `.ipp`, `.inl` and `.tpp` files — no C++ language server required.
+- Namespaces, classes/structs/unions/enums, inheritance (including inherited method resolution and
+  base data models), constructors, destructors, operator overloads, methods, free functions,
+  out-of-class definitions, parameters, return types, member and local variables, object creation,
+  lambda expressions and templates.
+- Call resolution through `#include`d headers, `this->`, declared variable/field types, base classes
+  and qualifier-to-type matching; unresolved calls are reported, never fabricated.
+- Standard library (`std::`, container/string accessors, C library functions) and macro noise is
+  filtered consistently with the existing JS/TS and Python builtin gates.
+
+### Fixed
+- Preprocessor directives are tokenized as single logical lines, so macro bodies never leak calls
+  into a flow.
+
 ## [1.2.0] - 2026-11-10
 
 ### Added
