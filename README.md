@@ -12,6 +12,7 @@ Extract complete execution graphs, inter-module dependencies, and related data m
 - **Python** (FastAPI, Flask, Django, Standalone functions & Models)
 - **TypeScript & TSX** (Classes, Methods, Interfaces, DTOs, Type aliases)
 - **JavaScript & JSX** (ES modules, Classes, Prototypes, Utilities)
+- **C++** (Namespaces, Classes/Structs, Inheritance, Templates, Constructors/Destructors, Lambdas)
 
 ---
 
@@ -26,13 +27,26 @@ Extract complete execution graphs, inter-module dependencies, and related data m
 
 ## 🛠️ Usage
 
-1. Open any Java, Python, TypeScript, or JavaScript file.
+1. Open any Java, Python, TypeScript, JavaScript, or C++ file (`.cpp`, `.cc`, `.cxx`, `.h`, `.hpp`, `.hh`, `.hxx`, `.ipp`).
 2. Place your cursor inside the method/function you want to trace.
 3. **Right-click** and open the **Bisotun** submenu:
    - **Copy Deep Execution Flow:** Traverses the full call tree up to `bisotun.maxDepth`.
    - **Copy Shallow Flow (1 Level):** Direct callees only.
    - **Copy Code Only:** Extracts the current method without dependencies.
 4. Paste directly into your LLM chat.
+
+---
+
+## 🔧 C++ Extraction Notes
+
+- Calls are resolved through the current file, base classes, and the headers reachable from the file's
+  `#include` directives. Unresolvable calls are reported as `UNRESOLVED`, never invented.
+- Object creation (`PaymentService service("x")` / `new PaymentService(...)`) resolves to the type's
+  constructor.
+- Standard library calls (`std::`, container/string accessors, C library functions) and `ALL_CAPS`
+  macros are filtered as ecosystem noise, keeping the flow focused on project code.
+- Constructs inside the extracted source (control flow, `try`/`catch`, `throw`, `return`, local and
+  member variables, templates) are preserved verbatim in each node's code block.
 
 ---
 
