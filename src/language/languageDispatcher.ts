@@ -7,6 +7,7 @@ import {
   languageKindFromLanguageId,
 } from '../core/types';
 import { LanguageFlowExtractor } from './languageFlowExtractor';
+import { CppFlowExtractor } from './cppFlowExtractor';
 import { JavaFlowExtractor } from './javaFlowExtractor';
 import { JsTsFlowExtractor } from './jsTsFlowExtractor';
 import { PythonFlowExtractor } from './pythonFlowExtractor';
@@ -22,7 +23,12 @@ class LanguageExtractionDispatcher {
   private readonly extractors: LanguageFlowExtractor[];
 
   constructor() {
-    this.extractors = [new JavaFlowExtractor(), new JsTsFlowExtractor(), new PythonFlowExtractor()];
+    this.extractors = [
+      new JavaFlowExtractor(),
+      new JsTsFlowExtractor(),
+      new PythonFlowExtractor(),
+      new CppFlowExtractor(),
+    ];
   }
 
   /**
