@@ -54,6 +54,7 @@ export type LanguageKind =
   | 'TS'
   | 'TSX'
   | 'PYTHON'
+  | 'CPP'
   | 'UNKNOWN';
 
 export interface LanguageKindInfo {
@@ -70,6 +71,7 @@ const LANGUAGE_INFO: Record<LanguageKind, LanguageKindInfo> = {
   TS: { displayName: 'TypeScript', codeFence: 'typescript' },
   TSX: { displayName: 'TypeScript (TSX)', codeFence: 'typescript' },
   PYTHON: { displayName: 'Python', codeFence: 'python' },
+  CPP: { displayName: 'C++', codeFence: 'cpp' },
   UNKNOWN: { displayName: 'Unknown', codeFence: 'text' },
 };
 
@@ -100,6 +102,19 @@ const EXTENSION_TO_KIND: Record<string, LanguageKind> = {
   py: 'PYTHON',
   pyw: 'PYTHON',
   pyi: 'PYTHON',
+  cpp: 'CPP',
+  cc: 'CPP',
+  cxx: 'CPP',
+  'c++': 'CPP',
+  cp: 'CPP',
+  h: 'CPP',
+  hpp: 'CPP',
+  hh: 'CPP',
+  hxx: 'CPP',
+  'h++': 'CPP',
+  ipp: 'CPP',
+  inl: 'CPP',
+  tpp: 'CPP',
 };
 
 /** Language kind derived from a file extension (lowercased). Mirrors LanguageKind.fromExtension. */
@@ -119,6 +134,7 @@ export function languageKindFromLanguageId(languageId: string | undefined | null
   if (id.includes('javascript') && id.includes('jsx')) return 'JSX';
   if (id.includes('javascript') || id.includes('ecmascript')) return 'JS';
   if (id.includes('python') || id === 'py') return 'PYTHON';
+  if (id === 'cpp' || id === 'c++' || id === 'cxx' || id === 'objective-c++') return 'CPP';
   if (id === 'ts' || id === 'tsx' || id === 'js' || id === 'jsx') {
     return languageKindFromExtension(id);
   }
