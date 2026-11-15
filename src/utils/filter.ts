@@ -43,5 +43,7 @@ export function isSupportedDocument(
     'typescript',
     'javascriptreact',
     'typescriptreact',
+    'cpp',
+    'c',
   ].includes(document.languageId);
 }
