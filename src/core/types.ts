@@ -55,6 +55,7 @@ export type LanguageKind =
   | 'TSX'
   | 'PYTHON'
   | 'CPP'
+  | 'GO'
   | 'UNKNOWN';
 
 export interface LanguageKindInfo {
@@ -72,6 +73,7 @@ const LANGUAGE_INFO: Record<LanguageKind, LanguageKindInfo> = {
   TSX: { displayName: 'TypeScript (TSX)', codeFence: 'typescript' },
   PYTHON: { displayName: 'Python', codeFence: 'python' },
   CPP: { displayName: 'C++', codeFence: 'cpp' },
+  GO: { displayName: 'Go', codeFence: 'go' },
   UNKNOWN: { displayName: 'Unknown', codeFence: 'text' },
 };
 
@@ -115,6 +117,7 @@ const EXTENSION_TO_KIND: Record<string, LanguageKind> = {
   ipp: 'CPP',
   inl: 'CPP',
   tpp: 'CPP',
+  go: 'GO',
 };
 
 /** Language kind derived from a file extension (lowercased). Mirrors LanguageKind.fromExtension. */
@@ -135,6 +138,7 @@ export function languageKindFromLanguageId(languageId: string | undefined | null
   if (id.includes('javascript') || id.includes('ecmascript')) return 'JS';
   if (id.includes('python') || id === 'py') return 'PYTHON';
   if (id === 'cpp' || id === 'c++' || id === 'cxx' || id === 'objective-c++') return 'CPP';
+  if (id === 'go' || id === 'golang') return 'GO';
   if (id === 'ts' || id === 'tsx' || id === 'js' || id === 'jsx') {
     return languageKindFromExtension(id);
   }
