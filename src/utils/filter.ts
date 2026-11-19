@@ -45,5 +45,6 @@ export function isSupportedDocument(
     'typescriptreact',
     'cpp',
     'c',
+    'go',
   ].includes(document.languageId);
 }
