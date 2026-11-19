@@ -4,6 +4,26 @@ All notable changes to the "Bisotun Flow Extractor" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.4.0] - 2026-11-15
+
+### Added
+- **Go Language Support:** Tokenizer-tier extractor (`GoFlowExtractor`, `GoTokenizer`,
+  `GoFileOutline`, `GoCallResolver`, `GoAnalysisContext`) for `.go` files — no Go language server
+  required.
+- Packages and imports (aliased, dot and blank), constants, variables, structs with tags and
+  embedded fields, interfaces with embedded interfaces, type aliases and named types, generic type
+  parameters, methods with value/pointer receivers, free functions, parameters and named/unnamed
+  results, local variables, `:=` short declarations, composite literals and `init` functions.
+- Call resolution through the current file, sibling files of the same package, imported packages
+  resolved from `go.mod`/`vendor`, receivers, embedded (promoted) methods and interface method
+  signatures; unresolved calls are reported, never fabricated.
+- Control flow, `defer`, `go`, `select`, channel creation/send/receive and `panic`/`recover` are
+  captured, and `defer`/`go` callees are expanded.
+- Standard library packages, built-in functions and type conversions are filtered consistently with
+  the existing JS/TS, Python and C++ builtin gates.
+- Go build constraints (`//go:build`, `// +build`, GOOS/GOARCH suffixes) are honoured during package
+  resolution, and malformed Go is parsed conservatively instead of throwing.
+
 ## [1.3.0] - 2026-11-14
 
 ### Added
