@@ -13,6 +13,7 @@ Extract complete execution graphs, inter-module dependencies, and related data m
 - **TypeScript & TSX** (Classes, Methods, Interfaces, DTOs, Type aliases)
 - **JavaScript & JSX** (ES modules, Classes, Prototypes, Utilities)
 - **C++** (Namespaces, Classes/Structs, Inheritance, Templates, Constructors/Destructors, Lambdas)
+- **Go** (Packages, Structs & Interfaces, Methods with Receivers, Goroutines, Channels, Generics)
 
 ---
 
@@ -27,7 +28,7 @@ Extract complete execution graphs, inter-module dependencies, and related data m
 
 ## 🛠️ Usage
 
-1. Open any Java, Python, TypeScript, JavaScript, or C++ file (`.cpp`, `.cc`, `.cxx`, `.h`, `.hpp`, `.hh`, `.hxx`, `.ipp`).
+1. Open any Java, Python, TypeScript, JavaScript, C++, or Go file (`.cpp`, `.cc`, `.cxx`, `.h`, `.hpp`, `.hh`, `.hxx`, `.ipp`, `.go`).
 2. Place your cursor inside the method/function you want to trace.
 3. **Right-click** and open the **Bisotun** submenu:
    - **Copy Deep Execution Flow:** Traverses the full call tree up to `bisotun.maxDepth`.
@@ -47,6 +48,25 @@ Extract complete execution graphs, inter-module dependencies, and related data m
   macros are filtered as ecosystem noise, keeping the flow focused on project code.
 - Constructs inside the extracted source (control flow, `try`/`catch`, `throw`, `return`, local and
   member variables, templates) are preserved verbatim in each node's code block.
+
+---
+
+## 🐹 Go Extraction Notes
+
+- Requires no Go language server. Calls resolve through the current file, sibling files of the same
+  package, and the packages reached from the file's `import` block via the module path in `go.mod`
+  (plus `vendor/`). Unresolvable calls are reported as `UNRESOLVED`, never invented.
+- Structs, interfaces, embedded types, type aliases, methods with value/pointer receivers,
+  parameters, named and unnamed results, local variables, `:=` short declarations, composite
+  literals, generic type parameters and `init` functions are part of the outline.
+- Control flow (`if`/`else`/`switch`/type switch/`for`/`range`/`break`/`continue`/`goto`), `defer`,
+  `go`, `select`, channel creation/send/receive and `panic`/`recover` stay verbatim in each node's
+  code block; `defer` and `go` callees resolve like ordinary calls.
+- Standard library packages (`fmt`, `strings`, `errors`, ...), built-in functions (`len`, `append`,
+  ...) and built-in type conversions are filtered as ecosystem noise, keeping the flow focused on
+  project code.
+- `//go:build`, legacy `// +build` lines and GOOS/GOARCH file-name suffixes are honoured when a
+  package is resolved; `_test.go` files are not treated as part of the package.
 
 ---
 
