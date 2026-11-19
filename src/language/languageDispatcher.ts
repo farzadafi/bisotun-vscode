@@ -8,6 +8,7 @@ import {
 } from '../core/types';
 import { LanguageFlowExtractor } from './languageFlowExtractor';
 import { CppFlowExtractor } from './cppFlowExtractor';
+import { GoFlowExtractor } from './goFlowExtractor';
 import { JavaFlowExtractor } from './javaFlowExtractor';
 import { JsTsFlowExtractor } from './jsTsFlowExtractor';
 import { PythonFlowExtractor } from './pythonFlowExtractor';
@@ -28,6 +29,7 @@ class LanguageExtractionDispatcher {
       new JsTsFlowExtractor(),
       new PythonFlowExtractor(),
       new CppFlowExtractor(),
+      new GoFlowExtractor(),
     ];
   }
 
