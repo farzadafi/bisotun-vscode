@@ -1,8 +1,8 @@
 {
   "name": "bisotun-flow-extractor",
   "displayName": "Bisotun Flow Extractor",
-  "description": "Deep method execution flow and context extractor for LLMs (Java, Python, TypeScript, JavaScript & C++)",
-  "version": "1.3.0",
+  "description": "Deep method execution flow and context extractor for LLMs (Java, Python, TypeScript, JavaScript, C++ & Go)",
+  "version": "1.4.0",
   "publisher": "farzadafi",
   "engines": {
     "vscode": "^1.85.0"
@@ -19,7 +19,8 @@
     "onLanguage:javascriptreact",
     "onLanguage:typescriptreact",
     "onLanguage:cpp",
-    "onLanguage:c"
+    "onLanguage:c",
+    "onLanguage:go"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -151,6 +152,8 @@
     "javascript",
     "cpp",
     "c++",
+    "go",
+    "golang",
     "code-extraction",
     "call-graph",
     "llm-context",
