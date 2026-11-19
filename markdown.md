@@ -10,6 +10,8 @@
 - **TypeScript React** (`typescriptreact`) - supported through JavaScriptStrategy `supports()` method
 - **C++** (`cpp`, plus `.h` headers by extension) - via `CppFlowExtractor` (tokenizer tier:
   `src/cpp/cppTokenizer.ts`, `src/cpp/cppFileOutline.ts`, `src/cpp/cppCallResolver.ts`)
+- **Go** (`go`, `.go`) - via `GoFlowExtractor` (tokenizer tier: `src/go/goTokenizer.ts`,
+  `src/go/goFileOutline.ts`, `src/go/goCallResolver.ts`, `src/go/goAnalysisContext.ts`)
 
 **Language detection**: `src/utils/filter.ts:36-47` - `isSupportedDocument()` checks `document.languageId` against supported list.
 
@@ -26,7 +28,7 @@
 
 **Command Palette**: All 4 commands available when `editorTextFocus`.
 
-**Activation Events** (package.json): `onLanguage:java`, `onLanguage:typescript`, `onLanguage:javascript`, `onLanguage:python`, `onLanguage:javascriptreact`, `onLanguage:typescriptreact`, `onLanguage:cpp`, `onLanguage:c`.
+**Activation Events** (package.json): `onLanguage:java`, `onLanguage:typescript`, `onLanguage:javascript`, `onLanguage:python`, `onLanguage:javascriptreact`, `onLanguage:typescriptreact`, `onLanguage:cpp`, `onLanguage:c`, `onLanguage:go`.
 
 ### 1.3 Starting Points
 - Cursor position in active editor document
